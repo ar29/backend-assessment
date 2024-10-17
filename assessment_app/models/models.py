@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 from assessment_app.models.constants import TradeType
 
@@ -14,7 +14,7 @@ class Token(BaseModel):
 
 
 class User(BaseModel):
-    email: EmailStr
+    email: str
     first_name: str
     last_name: str
 
@@ -47,7 +47,7 @@ class Strategy(BaseModel):
 
 
 class PortfolioRequest(BaseModel):
-    user_id: int
+    cash_remaining: Optional[float] = None
     strategy_id: str = "0"
     holdings: List[Holding]
 

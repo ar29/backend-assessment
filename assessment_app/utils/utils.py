@@ -22,7 +22,17 @@ def compute_cagr(beginning_value: float, ending_value: float, start_date: dateti
         200% CAGR would mean your returned value would be 200 for the duration
         5% CAGR would mean your returned value would be 5 for the duration
     """
-    pass
+    # Calculate the number of days between start_date and end_date
+    duration_in_days = (end_date - start_date).days
+    
+    # Calculate the number of years between the two dates
+    duration_in_years = duration_in_days / DAYS_IN_YEAR
+
+    # Calculate CAGR using the formula
+    if duration_in_years == 0 or beginning_value == 0:
+        return 0.0
+    cagr = ((ending_value / beginning_value) ** (1 / duration_in_years) - 1) * 100
+    return cagr
 
 
 def datetime_to_str(dt: datetime) -> str:
@@ -35,7 +45,7 @@ def datetime_to_str(dt: datetime) -> str:
     Returns:
     str: The datetime as a string.
     """
-    pass
+    return dt.strftime('%Y-%m-%d')
 
 
 def str_to_datetime(date_str: str) -> datetime:
@@ -48,4 +58,4 @@ def str_to_datetime(date_str: str) -> datetime:
     Returns:
     datetime: The datetime object.
     """
-    pass
+    return datetime.strptime(date_str, '%Y-%m-%d')

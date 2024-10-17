@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from assessment_app.models.constants import JWT_TOKEN
 from assessment_app.repository.database import get_db
-from assessment_app.models.schema import UserCredentials
+from assessment_app.models.schema import UserCredentialsORM
 
 # Secret key and algorithm (usually these would be in a config file)
 SECRET_KEY = "your_secret_key"  # Replace this with a more secure key
@@ -22,7 +22,7 @@ def verify_token(token: str, db: Session) -> str:
             raise HTTPException(status_code=401, detail="Invalid token")
         
         # Check if the token exists in the database
-        user = db.query(UserCredentials).filter(UserCredentials.email == email).first()
+        user = db.query(UserCredentialsORM).filter(UserCredentialsORM.email == email).first()
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         
@@ -37,7 +37,12 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> str:
     Get jwt_token from request cookies from database and return corresponding user id which is `email_id` to keep it simple.
     Verify the jwt_token is authentic (from database) and is not expired.
     """
-    token = request.cookies.get(JWT_TOKEN)
+    try:
+        token = request.cookies.get(JWT_TOKEN).split(" ")[1]
+    except IndexError:
+        token = request.cookies.get(JWT_TOKEN)
+    except AttributeError:
+        raise HTTPException(status_code=401, detail="Missing token")
     if not token:
         raise HTTPException(status_code=401, detail="Missing token")
     

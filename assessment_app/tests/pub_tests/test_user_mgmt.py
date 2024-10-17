@@ -48,7 +48,25 @@ def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
-def test_register_user(test_user):
+client = TestClient(app)
+
+# Create the tables before running the tests
+@pytest.fixture(scope="module")
+def setup_db():
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture
+def test_user():
+    return {
+        "email": "testuser@example.com",
+        "first_name": "Test",
+        "last_name": "User",
+        "password": "testpassword"
+    }
+
+def test_register_user(setup_db, test_user):
     response = client.post("/register", json=test_user)
     assert response.status_code == 200
     data = response.json()
@@ -56,10 +74,14 @@ def test_register_user(test_user):
     assert data["first_name"] == test_user["first_name"]
     assert data["last_name"] == test_user["last_name"]
 
-    # Test duplicate registration
+def test_register_existing_user(setup_db, test_user):
+    # Register the user for the first time
+    client.post("/register", json=test_user)
+
+    # Try registering the same user again
     response = client.post("/register", json=test_user)
     assert response.status_code == 400
-    assert response.json()["detail"] == "User with this email already exists"
+    assert response.json() == {"detail": "User with this email already exists"}
 
 def test_login_user_success(test_user):
     # Send POST request to /login endpoint with valid credentials
